@@ -32,8 +32,8 @@ class DWConvBlock3D(nn.Module):
             groups=channels,
             bias=False,
         )
-        self.norm = nn.GroupNorm(num_groups=min(32, channels), num_channels=channels)
-        self.act = nn.GELU()
+        self.norm = nn.InstanceNorm3d(channels, affine=True)
+        self.act = nn.ReLU(inplace=True)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.conv(x)
@@ -60,8 +60,8 @@ class DWDConv3D(nn.Module):
             groups=channels,
             bias=False,
         )
-        self.norm = nn.GroupNorm(num_groups=min(32, channels), num_channels=channels)
-        self.act = nn.GELU()
+        self.norm = nn.InstanceNorm3d(channels, affine=True)
+        self.act = nn.ReLU(inplace=True)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.conv(x)
@@ -89,8 +89,8 @@ class DDWConv3D(nn.Module):
                 groups=channels,
                 bias=False,
             ),
-            nn.GroupNorm(num_groups=min(32, channels), num_channels=channels),
-            nn.GELU(),
+            nn.InstanceNorm3d(channels, affine=True),
+            nn.ReLU(inplace=True),
         )
         self.stage2 = nn.Sequential(
             nn.Conv3d(
@@ -101,8 +101,8 @@ class DDWConv3D(nn.Module):
                 groups=channels,
                 bias=False,
             ),
-            nn.GroupNorm(num_groups=min(32, channels), num_channels=channels),
-            nn.GELU(),
+            nn.InstanceNorm3d(channels, affine=True),
+            nn.ReLU(inplace=True),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -126,7 +126,7 @@ class LKAdBlock3D(nn.Module):
 
         # Conv1: point-wise convolution to mix channels without changing spatial dims.
         self.conv_in = nn.Conv3d(self.in_channels, self.out_channels, kernel_size=1, bias=False)
-        self.act = nn.GELU()
+        self.act = nn.ReLU(inplace=True)
 
         # Local attention branch: DW-Conv -> DWD-Conv -> DDW-Conv3 -> Conv1.
         self.dw_conv = DWConvBlock3D(self.out_channels)
